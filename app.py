@@ -120,6 +120,8 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             margin: 0 auto;
             padding: 12px 18px 12px;
             border-radius: 18px;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
             border: 1px solid {theme['border_color']};
             background: {theme['paper_bg']};
             color: {theme['text_color']};
@@ -412,9 +414,10 @@ def generate_invoice_image(invoice_no, invoice_date, customer, line_items, gst_e
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1365, "height": 900}, device_scale_factor=1)
+            page = browser.new_page(viewport={"width": 1400, "height": 900}, device_scale_factor=1)
             page.goto("file://" + path, wait_until="networkidle")
-            page.locator("body").screenshot(path=path + ".png")
+            page.locator(".invoice-paper").scroll_into_view_if_needed()
+            page.locator(".invoice-paper").screenshot(path=path + ".png")
             browser.close()
 
         with open(path + ".png", "rb") as img_file:
@@ -620,7 +623,7 @@ invoice_html = build_invoice_html(
     owner_details,
 )
 
-components.html(invoice_html, height=1100, scrolling=True)
+components.html(invoice_html, height=760, scrolling=False)
 
 share_text = invoice_summary_text(
     invoice_no.strip() or "N/A",

@@ -1,0 +1,174 @@
+{
+  "company": {
+    "name": "Sagar Agency",
+    "phone": "+91 98765 43210",
+    "email": "sagaragency@example.com",
+    "address": "17 Market Road, Bengaluru, Karnataka 560001"
+  },
+  "customers": [
+    {
+      "id": "cust-01",
+      "name": "Ramdev Traders",
+      "phone": "+91 99887 66554",
+      "email": "ramdev@traders.in",
+      "address": "MG Road, Bengaluru"
+    },
+    {
+      "id": "cust-02",
+      "name": "Gopal Masala",
+      "phone": "+91 98700 12345",
+      "email": "gopal@masala.in",
+      "address": "Whitefield, Bengaluru"
+    },
+    {
+      "id": "cust-03",
+      "name": "Tendolkar stores",
+      "phone": "+91 98450 33440",
+      "email": "tendolkar@stores.in",
+      "address": "HSR Layout, Bengaluru"
+    },
+    {
+      "id": "cust-04",
+      "name": "Rajaram stores",
+      "phone": "+91 98210 10101",
+      "email": "rajaram@stores.in",
+      "address": "Kalyan Nagar, Bengaluru"
+    },
+    {
+      "id": "cust-05",
+      "name": "Al Aqsa enterprises",
+      "phone": "+91 98111 22334",
+      "email": "alaqsa@enterprises.in",
+      "address": "Koramangala, Bengaluru"
+    },
+    {
+      "id": "cust-06",
+      "name": "Momin store",
+      "phone": "+91 97666 77888",
+      "email": "momin@store.in",
+      "address": "Jayanagar, Bengaluru"
+    },
+    {
+      "id": "cust-07",
+      "name": "Hanuman store",
+      "phone": "+91 98980 44444",
+      "email": "hanuman@store.in",
+      "address": "Indiranagar, Bengaluru"
+    },
+    {
+      "id": "cust-08",
+      "name": "Durga Enterprises",
+      "phone": "+91 98888 55667",
+      "email": "durga@enterprises.in",
+      "address": "Malleshwaram, Bengaluru"
+    },
+    {
+      "id": "cust-09",
+      "name": "Shree Durga Store",
+      "phone": "+91 97777 88999",
+      "email": "shreedurga@store.in",
+      "address": "Basavanagudi, Bengaluru"
+    }
+  ],
+  "items": [
+    {
+      "id": "itm-01",
+      "name": "KL 100gm",
+      "price": 160.0,
+      "default_quantity": 1.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-02",
+      "name": "KL 200gm",
+      "price": 280.0,
+      "default_quantity": 1.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-03",
+      "name": "KL 500gm",
+      "price": 620.0,
+      "default_quantity": 1.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-04",
+      "name": "KL 1kg",
+      "price": 1200.0,
+      "default_quantity": 1.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-05",
+      "name": "KL",
+      "price": 90.0,
+      "default_quantity": 2.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-06",
+      "name": "Biriyani masala",
+      "price": 95.0,
+      "default_quantity": 3.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-07",
+      "name": "Chivada masala",
+      "price": 110.0,
+      "default_quantity": 2.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    },
+    {
+      "id": "itm-08",
+      "name": "Chakli Masala",
+      "price": 125.0,
+      "default_quantity": 2.0,
+      "units": ["Nos", "KG"],
+      "default_unit": "Nos"
+    }
+  ],
+  "themes": [
+    {
+      "name": "Simple Light",
+      "paper_bg": "#ffffff",
+      "accent": "#0f172a",
+      "text_color": "#111827",
+      "muted_color": "#4b5563",
+      "border_color": "#d1d5db",
+      "badge_bg": "#e5e7eb",
+      "badge_text": "#0f172a",
+      "highlight_bg": "#f8fafc"
+    },
+    {
+      "name": "Dark Premium",
+      "paper_bg": "#111827",
+      "accent": "#fbbf24",
+      "text_color": "#f9fafb",
+      "muted_color": "#d1d5db",
+      "border_color": "#374151",
+      "badge_bg": "#1f2937",
+      "badge_text": "#f9fafb",
+      "highlight_bg": "#0f172a"
+    },
+    {
+      "name": "Thermal Print",
+      "paper_bg": "#f7f3e8",
+      "accent": "#0b0b0b",
+      "text_color": "#18181b",
+      "muted_color": "#3f3f46",
+      "border_color": "#a1a1aa",
+      "badge_bg": "#e4e4e7",
+      "badge_text": "#18181b",
+      "highlight_bg": "#fafaf9"
+    }
+  ]
+}

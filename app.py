@@ -109,13 +109,16 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             margin: 0;
             background: #e5e7eb;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 17px;
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }}
         .invoice-paper {{
-            width: min(100%, 210mm);
-            min-height: 148mm;
+            width: 820px;
+            max-width: 100%;
+            min-height: 560px;
             margin: 0 auto;
-            padding: 10px 16px 8px;
+            padding: 12px 18px 12px;
             border-radius: 18px;
             border: 1px solid {theme['border_color']};
             background: {theme['paper_bg']};
@@ -127,46 +130,46 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             justify-content: space-between;
             align-items: flex-start;
             gap: 12px;
-            padding-bottom: 5px;
-            margin-bottom: 6px;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
             border-bottom: 1px solid {theme['border_color']};
         }}
         .company-name {{
-            font-size: 1.2rem;
+            font-size: 22px;
             font-weight: 700;
             letter-spacing: 0.02em;
             color: {theme['accent']};
             line-height: 1.2;
         }}
         .invoice-date {{
-            font-size: 1rem;
+            font-size: 18px;
             font-weight: 700;
             color: {theme['text_color']};
             white-space: nowrap;
             margin-top: 2px;
         }}
         .invoice-card {{
-            min-height: 68px;
-            padding: 2px 0 6px;
+            min-height: 90px;
+            padding: 4px 0 8px;
         }}
         .invoice-card .label {{
-            font-size: 0.9rem;
+            font-size: 14px;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: {theme['text_color']};
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }}
         .customer-name {{
-            font-size: clamp(2.6rem, 3.6vw, 4.2rem);
+            font-size: 60px;
             font-weight: 900;
-            line-height: 1.04;
+            line-height: 1.02;
             color: {theme['text_color']};
             letter-spacing: -0.06em;
-            margin: 0 0 2px;
+            margin: 0 0 6px;
         }}
         .detail-text {{
-            font-size: 1rem;
+            font-size: 16px;
             line-height: 1.5;
             color: {theme['muted_color']};
         }}
@@ -187,9 +190,9 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
         colgroup col:nth-child(4) {{ width: 20%; }}
         th, td {{
             border-bottom: 1px solid {theme['border_color']};
-            padding: 8px 10px 7px;
+            padding: 10px 10px 9px;
             text-align: left;
-            font-size: 1.02rem;
+            font-size: 15px;
             line-height: 1.35;
         }}
         th {{
@@ -198,13 +201,13 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             color: {theme['text_color']};
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-size: 0.96rem;
+            font-size: 14px;
         }}
         tr:last-child td {{
             border-bottom: none;
         }}
         .totals {{
-            margin-top: 12px;
+            margin-top: 14px;
             display: flex;
             justify-content: flex-end;
         }}
@@ -219,14 +222,14 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.06rem;
+            font-size: 17px;
             padding: 5px 0;
             border-bottom: 1px solid {theme['border_color']};
         }}
         .totals-row:last-child {{
             border-bottom: none;
             font-weight: 900;
-            font-size: 1.35rem;
+            font-size: 26px;
         }}
         @media (max-width: 700px) {{
             .invoice-paper {{
@@ -500,17 +503,20 @@ st.markdown(
     """
     <style>
     html, body {{
-        font-size: 18px;
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }}
     .stApp {{
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        font-size: 18px;
+        font-size: 16px;
     }}
     .block-container {{
-        max-width: 1400px !important;
+        max-width: 1200px !important;
+        padding-top: 1rem !important;
     }}
     .stSidebar, .stSidebar * {{
-        font-size: 1.04rem !important;
+        font-size: 1rem !important;
     }}
     .stTextInput input, .stSelectbox div, .stMultiSelect div, .stDateInput input, .stNumberInput input {{
         font-size: 1rem !important;

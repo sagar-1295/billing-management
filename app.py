@@ -334,62 +334,42 @@ def generate_pdf_invoice(invoice_no, invoice_date, customer, line_items, gst_ena
 
     company_name = owner_details.get("name", "").strip() or "Sagar Agency"
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(20, height - 30, company_name)
-    c.setFont("Helvetica", 9)
-    if owner_details.get("phone", "").strip():
-        c.drawString(20, height - 45, owner_details["phone"].strip())
-    if owner_details.get("email", "").strip():
-        c.drawString(20, height - 60, owner_details["email"].strip())
-    if owner_details.get("address", "").strip():
-        c.drawString(20, height - 75, owner_details["address"].strip())
+    c.drawString(20, height - 28, company_name)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawRightString(width - 20, height - 28, f"Date: {invoice_date}")
 
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(width - 120, height - 30, f"Date: {invoice_date}")
+    c.setStrokeColorRGB(0.7, 0.7, 0.7)
+    c.line(20, height - 42, width - 20, height - 42)
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(20, height - 120, "Bill To")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(20, height - 72, "Bill To")
     c.setFont("Helvetica-Bold", 18)
-    y = height - 140
-    c.drawString(20, y, customer.get("name", "").strip() or "Customer Name")
-    y -= 14
-    for value in [
-        customer.get("phone", "").strip(),
-        customer.get("email", "").strip(),
-        customer.get("address", "").strip(),
-    ]:
-        if value:
-            c.drawString(20, y, value)
-            y -= 12
+    c.drawString(20, height - 100, (customer.get("name", "") or "Customer Name").strip()[:45])
+
+    c.setFont("Helvetica-Bold", 9)
+    y = height - 150
+    c.drawString(20, y, "Item")
+    c.drawString(130, y, "Qty")
+    c.drawString(190, y, "Rate")
+    c.drawString(250, y, "Amount")
 
     y -= 18
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(20, y, "Item")
-    c.drawString(120, y, "Qty")
-    c.drawString(170, y, "Rate")
-    c.drawString(220, y, "Amt")
-    y -= 12
-    c.setFont("Helvetica", 9)
     subtotal = 0.0
+    c.setFont("Helvetica", 9)
     for item in line_items:
         subtotal += item["amount"]
-        c.drawString(20, y, item["name"][:20])
-        c.drawString(120, y, f"{item['quantity']} {item['unit']}")
-        c.drawString(170, y, format_currency(item["price"]))
-        c.drawString(220, y, format_currency(item["amount"]))
-        y -= 12
+        c.drawString(20, y, item["name"][:22])
+        c.drawString(130, y, f"{item['quantity']} {item['unit']}")
+        c.drawString(190, y, format_currency(item["price"]))
+        c.drawString(250, y, format_currency(item["amount"]))
+        y -= 18
 
-    c.setFont("Helvetica-Bold", 10)
-    y -= 18
-    if gst_enabled:
-        c.drawString(165, y, f"Subtotal: {format_currency(subtotal)}")
-        y -= 12
-        gst_total = subtotal * gst_rate / 100
-        c.drawString(165, y, f"GST: {format_currency(gst_total)}")
-        y -= 12
-        total = subtotal + gst_total
-    else:
-        total = subtotal
-    c.drawString(165, y, f"Total: {format_currency(total)}")
+    c.setStrokeColorRGB(0.7, 0.7, 0.7)
+    c.line(width - 150, y - 18, width - 20, y - 18)
+    total_box_y = y - 42
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(width - 120, total_box_y + 16, "Total")
+    c.drawRightString(width - 24, total_box_y + 16, format_currency(subtotal + (subtotal * gst_rate / 100 if gst_enabled else 0)))
     c.save()
     return buffer.getvalue()
 
@@ -399,60 +379,58 @@ def generate_invoice_image(invoice_no, invoice_date, customer, line_items, gst_e
     width, height = 1240, 880
     image = Image.new("RGB", (width, height), color=theme["paper_bg"])
     draw = ImageDraw.Draw(image)
-    margin = 60
-    pad = 24
+    margin = 62
 
-    def fill_box(x, y, w, h, fill):
-        draw.rounded_rectangle((x, y, x + w, y + h), radius=18, fill=fill)
+    outline = theme.get("border_color", "#d1d5db")
+    text_color = theme.get("text_color", "#111827")
+    muted_color = theme.get("muted_color", "#4b5563")
+    accent = theme.get("accent", "#111827")
+    highlight = theme.get("highlight_bg", "#f3f4f6")
 
-    draw.rounded_rectangle((30, 30, width - 30, height - 30), radius=22, outline=theme["border_color"], width=3)
+    draw.rounded_rectangle((30, 30, width - 30, height - 30), radius=22, outline=outline, width=3)
 
     company_name = owner_details.get("name", "").strip() or "Sagar Agency"
-    draw.text((margin, margin), company_name, font=resolve_font(22, bold=True), fill=theme["accent"])
-    draw.text((width - 230, margin + 8), f"Date: {invoice_date}", font=resolve_font(20, bold=True), fill=theme["text_color"])
-    draw.line((margin, margin + 44, width - margin, margin + 44), fill=theme["border_color"], width=2)
+    draw.text((margin, margin - 4), company_name, font=resolve_font(18, bold=True), fill=accent)
+    draw.text((width - 260, margin - 2), f"Date: {invoice_date}", font=resolve_font(16, bold=True), fill=text_color)
+    draw.line((margin, margin + 26, width - margin, margin + 26), fill=outline, width=2)
 
-    bill_y = margin + 60
-    draw.text((margin, bill_y), "Bill To", font=resolve_font(18), fill=theme["muted_color"])
-    draw.text((margin, bill_y + 28), customer.get("name", "").strip() or "Customer Name", font=resolve_font(34, bold=True), fill=theme["text_color"])
-    text_y = bill_y + 90
-    for line in [
-        customer.get("phone", "").strip(),
-        customer.get("email", "").strip(),
-        customer.get("address", "").strip(),
-    ]:
-        if line:
-            draw.text((margin, text_y), line, font=resolve_font(22), fill=theme["text_color"])
-            text_y += 30
+    bill_y = margin + 46
+    draw.text((margin, bill_y), "Bill To", font=resolve_font(15, bold=True), fill=muted_color)
+    draw.text((margin, bill_y + 26), (customer.get("name", "") or "Customer Name").strip() or "Customer Name", font=resolve_font(30, bold=True), fill=text_color)
 
-    table_top = text_y + 40
-    col_positions = [margin, 500, 760, 970]
-    for idx, header in enumerate(["Item", "Qty", "Rate", "Amount"]):
-        draw.text((col_positions[idx], table_top), header, font=resolve_font(18, bold=True), fill=theme["text_color"])
-    y = table_top + 38
+    table_top = bill_y + 104
+    col_positions = [margin, 420, 620, 840]
+    headers = ["Item", "Qty", "Rate", "Amount"]
+    for idx, header in enumerate(headers):
+        draw.text((col_positions[idx], table_top), header, font=resolve_font(14, bold=True), fill=text_color)
+
+    y = table_top + 34
     subtotal = 0.0
     for item in line_items:
         subtotal += item["amount"]
-        draw.text((margin, y), item["name"][:18], font=resolve_font(18), fill=theme["text_color"])
-        draw.text((500, y), f"{item['quantity']} {item['unit']}", font=resolve_font(18), fill=theme["text_color"])
-        draw.text((760, y), format_currency(item["price"]), font=resolve_font(18), fill=theme["text_color"])
-        draw.text((970, y), format_currency(item["amount"]), font=resolve_font(18), fill=theme["text_color"])
+        draw.text((margin, y), item["name"][:24], font=resolve_font(17), fill=text_color)
+        draw.text((col_positions[1], y), f"{item['quantity']} {item['unit']}", font=resolve_font(17), fill=text_color)
+        draw.text((col_positions[2], y), format_currency(item["price"]), font=resolve_font(17), fill=text_color)
+        draw.text((col_positions[3], y), format_currency(item["amount"]), font=resolve_font(17), fill=text_color)
         y += 34
 
-    totals_box_x = width - 360
-    totals_box_y = y + 30
-    fill_box(totals_box_x, totals_box_y, 270, 120, theme["highlight_bg"])
+    total_box_x = width - 340
+    total_box_y = y + 26
+    draw.rounded_rectangle((total_box_x, total_box_y, total_box_x + 240, total_box_y + 94), radius=18, fill=highlight)
     if gst_enabled:
-        draw.text((totals_box_x + 18, totals_box_y + 18), "Subtotal", font=resolve_font(18), fill=theme["text_color"])
-        draw.text((totals_box_x + 180, totals_box_y + 18), format_currency(subtotal), font=resolve_font(18), fill=theme["text_color"])
-        gst_total = subtotal * gst_rate / 100
-        draw.text((totals_box_x + 18, totals_box_y + 54), "GST", font=resolve_font(18), fill=theme["text_color"])
-        draw.text((totals_box_x + 180, totals_box_y + 54), format_currency(gst_total), font=resolve_font(18), fill=theme["text_color"])
-        total = subtotal + gst_total
+        subtotal_val = subtotal
+        gst_value = subtotal * gst_rate / 100
+        total_value = subtotal + gst_value
+        draw.text((total_box_x + 18, total_box_y + 18), "Subtotal", font=resolve_font(16), fill=text_color)
+        draw.text((total_box_x + 150, total_box_y + 18), format_currency(subtotal_val), font=resolve_font(16), fill=text_color)
+        draw.text((total_box_x + 18, total_box_y + 52), "GST", font=resolve_font(16), fill=text_color)
+        draw.text((total_box_x + 150, total_box_y + 52), format_currency(gst_value), font=resolve_font(16), fill=text_color)
+        draw.text((total_box_x + 18, total_box_y + 80), "Total", font=resolve_font(16, bold=True), fill=text_color)
+        draw.text((total_box_x + 150, total_box_y + 80), format_currency(total_value), font=resolve_font(16, bold=True), fill=text_color)
     else:
-        total = subtotal
-    draw.text((totals_box_x + 18, totals_box_y + (54 if gst_enabled else 18)), "Total", font=resolve_font(18, bold=True), fill=theme["text_color"])
-    draw.text((totals_box_x + 180, totals_box_y + (54 if gst_enabled else 18)), format_currency(total), font=resolve_font(18, bold=True), fill=theme["text_color"])
+        total_value = subtotal
+        draw.text((total_box_x + 18, total_box_y + 34), "Total", font=resolve_font(16, bold=True), fill=text_color)
+        draw.text((total_box_x + 150, total_box_y + 34), format_currency(total_value), font=resolve_font(16, bold=True), fill=text_color)
 
     with io.BytesIO() as buf:
         image.save(buf, format="PNG")
@@ -501,7 +479,7 @@ with st.sidebar:
 
     invoice_no = st.text_input("Invoice Number", value="")
     invoice_date = st.date_input("Invoice Date", value=date.today())
-    gst_enabled = st.toggle("GST Enabled", value=True, help="Turn GST on or off for this invoice")
+    gst_enabled = st.toggle("GST Enabled", value=False, help="Turn GST on or off for this invoice")
     gst_rate = st.number_input("GST Rate (%)", min_value=0.0, max_value=28.0, value=18.0, step=1.0, disabled=not gst_enabled)
 
     st.subheader("Items")
@@ -540,7 +518,7 @@ with st.sidebar:
 
     st.caption("Optional note: the invoice paper is sized like an A5 sheet for easy print preview.")
 
-st.title("Simple Invoice App")
+st.title("Invoice App")
 
 if not selected_line_items:
     st.warning("Please select at least one item to generate the invoice.")

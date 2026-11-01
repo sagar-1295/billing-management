@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -26,7 +27,7 @@ customers = catalog["customers"]
 items = catalog["items"]
 themes = catalog["themes"]
 
-st.set_page_config(page_title="Sagar Agency Invoice", layout="wide")
+st.set_page_config(page_title="Invoice App", layout="wide")
 
 
 def get_theme_by_name(theme_name: str):
@@ -108,29 +109,30 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             margin: 0;
             background: #e5e7eb;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 17px;
         }}
         .invoice-paper {{
             width: min(100%, 210mm);
             min-height: 148mm;
             margin: 0 auto;
-            padding: 28px 18px 18px;
-            border-radius: 20px;
+            padding: 10px 16px 8px;
+            border-radius: 18px;
             border: 1px solid {theme['border_color']};
             background: {theme['paper_bg']};
             color: {theme['text_color']};
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
         }}
         .invoice-header {{
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             gap: 12px;
-            padding-bottom: 12px;
-            margin-bottom: 18px;
+            padding-bottom: 5px;
+            margin-bottom: 6px;
             border-bottom: 1px solid {theme['border_color']};
         }}
         .company-name {{
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 700;
             letter-spacing: 0.02em;
             color: {theme['accent']};
@@ -144,24 +146,24 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             margin-top: 2px;
         }}
         .invoice-card {{
-            min-height: 120px;
-            padding: 4px 0 10px;
+            min-height: 68px;
+            padding: 2px 0 6px;
         }}
         .invoice-card .label {{
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: {theme['text_color']};
-            margin-bottom: 10px;
+            margin-bottom: 2px;
         }}
         .customer-name {{
-            font-size: clamp(2.1rem, 3vw, 4rem);
+            font-size: clamp(2.6rem, 3.6vw, 4.2rem);
             font-weight: 900;
-            line-height: 1.0;
+            line-height: 1.04;
             color: {theme['text_color']};
-            letter-spacing: -0.05em;
-            margin: 0 0 10px;
+            letter-spacing: -0.06em;
+            margin: 0 0 2px;
         }}
         .detail-text {{
             font-size: 1rem;
@@ -179,11 +181,16 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             border-collapse: collapse;
             table-layout: fixed;
         }}
+        colgroup col:nth-child(1) {{ width: 42%; }}
+        colgroup col:nth-child(2) {{ width: 18%; }}
+        colgroup col:nth-child(3) {{ width: 20%; }}
+        colgroup col:nth-child(4) {{ width: 20%; }}
         th, td {{
             border-bottom: 1px solid {theme['border_color']};
-            padding: 14px 12px;
+            padding: 8px 10px 7px;
             text-align: left;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
+            line-height: 1.35;
         }}
         th {{
             background: {theme['highlight_bg']};
@@ -191,35 +198,35 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             color: {theme['text_color']};
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-size: 1rem;
+            font-size: 0.96rem;
         }}
         tr:last-child td {{
             border-bottom: none;
         }}
         .totals {{
-            margin-top: 18px;
+            margin-top: 12px;
             display: flex;
             justify-content: flex-end;
         }}
         .totals-box {{
-            width: 330px;
+            width: 300px;
             border: 1px solid {theme['border_color']};
-            border-radius: 14px;
+            border-radius: 12px;
             background: rgba(255,255,255,0.05);
-            padding: 12px 16px;
+            padding: 10px 14px;
         }}
         .totals-row {{
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.2rem;
-            padding: 8px 0;
+            font-size: 1.06rem;
+            padding: 5px 0;
             border-bottom: 1px solid {theme['border_color']};
         }}
         .totals-row:last-child {{
             border-bottom: none;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
         }}
         @media (max-width: 700px) {{
             .invoice-paper {{
@@ -279,6 +286,12 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
 
         <div class="invoice-table-wrap">
             <table>
+                <colgroup>
+                    <col>
+                    <col>
+                    <col>
+                    <col>
+                </colgroup>
                 <thead>
                     <tr>
                         <th>Item</th>
@@ -376,65 +389,102 @@ def generate_pdf_invoice(invoice_no, invoice_date, customer, line_items, gst_ena
 
 @st.cache_data
 def generate_invoice_image(invoice_no, invoice_date, customer, line_items, gst_enabled, gst_rate, owner_details, theme):
-    width, height = 1240, 880
-    image = Image.new("RGB", (width, height), color=theme["paper_bg"])
-    draw = ImageDraw.Draw(image)
-    margin = 62
+    html = build_invoice_html(
+        customer=customer,
+        selected_line_items=line_items,
+        invoice_no=invoice_no,
+        invoice_date=invoice_date,
+        gst_enabled=gst_enabled,
+        tax_rate=gst_rate,
+        theme=theme,
+        owner_details=owner_details,
+    )
 
-    outline = theme.get("border_color", "#d1d5db")
-    text_color = theme.get("text_color", "#111827")
-    muted_color = theme.get("muted_color", "#4b5563")
-    accent = theme.get("accent", "#111827")
-    highlight = theme.get("highlight_bg", "#f3f4f6")
+    try:
+        from playwright.sync_api import sync_playwright
 
-    draw.rounded_rectangle((30, 30, width - 30, height - 30), radius=22, outline=outline, width=3)
+        with tempfile.NamedTemporaryFile("w", suffix=".html", encoding="utf-8", delete=False) as tmp:
+            tmp.write("<!doctype html><html><head><meta charset='utf-8'></head><body style='margin:0;background:#e5e7eb'>" + html + "</body></html>")
+            path = tmp.name
 
-    company_name = owner_details.get("name", "").strip() or "Sagar Agency"
-    draw.text((margin, margin - 4), company_name, font=resolve_font(18, bold=True), fill=accent)
-    draw.text((width - 260, margin - 2), f"Date: {invoice_date}", font=resolve_font(16, bold=True), fill=text_color)
-    draw.line((margin, margin + 26, width - margin, margin + 26), fill=outline, width=2)
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page(viewport={"width": 1365, "height": 900}, device_scale_factor=1)
+            page.goto("file://" + path, wait_until="networkidle")
+            page.locator("body").screenshot(path=path + ".png")
+            browser.close()
 
-    bill_y = margin + 46
-    draw.text((margin, bill_y), "Bill To", font=resolve_font(15, bold=True), fill=muted_color)
-    draw.text((margin, bill_y + 26), (customer.get("name", "") or "Customer Name").strip() or "Customer Name", font=resolve_font(30, bold=True), fill=text_color)
+        with open(path + ".png", "rb") as img_file:
+            screenshot_bytes = img_file.read()
+        os.remove(path)
+        os.remove(path + ".png")
+        return screenshot_bytes
+    except Exception:
+        width, height = 1365, 900
+        image = Image.new("RGB", (width, height), color=theme.get("paper_bg", "#f3f4f6"))
+        draw = ImageDraw.Draw(image)
+        margin = 50
 
-    table_top = bill_y + 104
-    col_positions = [margin, 420, 620, 840]
-    headers = ["Item", "Qty", "Rate", "Amount"]
-    for idx, header in enumerate(headers):
-        draw.text((col_positions[idx], table_top), header, font=resolve_font(14, bold=True), fill=text_color)
+        outline = theme.get("border_color", "#d1d5db")
+        text_color = theme.get("text_color", "#111827")
+        accent = theme.get("accent", "#111827")
+        soft_bg = theme.get("highlight_bg", "#e8eaec")
+        header_bg = theme.get("highlight_bg", "#e7ebee")
 
-    y = table_top + 34
-    subtotal = 0.0
-    for item in line_items:
-        subtotal += item["amount"]
-        draw.text((margin, y), item["name"][:24], font=resolve_font(17), fill=text_color)
-        draw.text((col_positions[1], y), f"{item['quantity']} {item['unit']}", font=resolve_font(17), fill=text_color)
-        draw.text((col_positions[2], y), format_currency(item["price"]), font=resolve_font(17), fill=text_color)
-        draw.text((col_positions[3], y), format_currency(item["amount"]), font=resolve_font(17), fill=text_color)
-        y += 34
+        draw.rounded_rectangle((16, 16, width - 16, height - 16), radius=18, outline=outline, width=2, fill=theme.get("paper_bg", "#f3f4f6"))
 
-    total_box_x = width - 340
-    total_box_y = y + 26
-    draw.rounded_rectangle((total_box_x, total_box_y, total_box_x + 240, total_box_y + 94), radius=18, fill=highlight)
-    if gst_enabled:
-        subtotal_val = subtotal
-        gst_value = subtotal * gst_rate / 100
-        total_value = subtotal + gst_value
-        draw.text((total_box_x + 18, total_box_y + 18), "Subtotal", font=resolve_font(16), fill=text_color)
-        draw.text((total_box_x + 150, total_box_y + 18), format_currency(subtotal_val), font=resolve_font(16), fill=text_color)
-        draw.text((total_box_x + 18, total_box_y + 52), "GST", font=resolve_font(16), fill=text_color)
-        draw.text((total_box_x + 150, total_box_y + 52), format_currency(gst_value), font=resolve_font(16), fill=text_color)
-        draw.text((total_box_x + 18, total_box_y + 80), "Total", font=resolve_font(16, bold=True), fill=text_color)
-        draw.text((total_box_x + 150, total_box_y + 80), format_currency(total_value), font=resolve_font(16, bold=True), fill=text_color)
-    else:
-        total_value = subtotal
-        draw.text((total_box_x + 18, total_box_y + 34), "Total", font=resolve_font(16, bold=True), fill=text_color)
-        draw.text((total_box_x + 150, total_box_y + 34), format_currency(total_value), font=resolve_font(16, bold=True), fill=text_color)
+        company_name = owner_details.get("name", "").strip() or "Sagar Agency"
+        draw.text((margin, 18), company_name, font=resolve_font(24, bold=True), fill=accent)
+        draw.text((width - 290, 18), f"Date: {invoice_date}", font=resolve_font(24, bold=True), fill=text_color)
+        draw.line((margin, 62, width - margin, 62), fill=outline, width=2)
 
-    with io.BytesIO() as buf:
-        image.save(buf, format="PNG")
-        return buf.getvalue()
+        bill_y = 90
+        draw.text((margin, bill_y), "BILL TO", font=resolve_font(18, bold=True), fill=text_color)
+        customer_name = (customer.get("name", "") or "Customer Name").strip() or "Customer Name"
+        draw.text((margin, bill_y + 26), customer_name, font=resolve_font(56, bold=True), fill=text_color)
+
+        table_top = 220
+        table_left = margin
+        table_width = width - (margin * 2)
+        col_positions = [table_left, table_left + 470, table_left + 700, table_left + 930]
+        headers = ["ITEM", "QTY", "RATE", "AMOUNT"]
+        draw.rounded_rectangle((table_left, table_top, table_left + table_width, table_top + 48), radius=0, fill=header_bg)
+        for idx, header in enumerate(headers):
+            draw.text((col_positions[idx] + 12, table_top + 12), header, font=resolve_font(18, bold=True), fill=text_color)
+
+        y = table_top + 54
+        subtotal = 0.0
+        row_height = 58
+        for item in line_items:
+            subtotal += item["amount"]
+            draw.line((table_left, y, table_left + table_width, y), fill=outline, width=2)
+            draw.text((table_left + 12, y + 12), item["name"][:24], font=resolve_font(18), fill=text_color)
+            draw.text((col_positions[1] + 12, y + 12), f"{item['quantity']} {item['unit']}", font=resolve_font(18), fill=text_color)
+            draw.text((col_positions[2] + 10, y + 12), format_currency(item["price"]), font=resolve_font(18), fill=text_color)
+            draw.text((col_positions[3] + 8, y + 12), format_currency(item["amount"]), font=resolve_font(18), fill=text_color)
+            y += row_height
+
+        total_box_x = width - 360
+        total_box_y = y + 24
+        draw.rounded_rectangle((total_box_x, total_box_y, total_box_x + 260, total_box_y + 92), radius=12, fill=soft_bg)
+
+        if gst_enabled:
+            gst_value = subtotal * gst_rate / 100
+            total_value = subtotal + gst_value
+            draw.text((total_box_x + 18, total_box_y + 16), "Subtotal", font=resolve_font(18), fill=text_color)
+            draw.text((total_box_x + 165, total_box_y + 16), format_currency(subtotal), font=resolve_font(18), fill=text_color)
+            draw.text((total_box_x + 18, total_box_y + 48), "GST", font=resolve_font(18), fill=text_color)
+            draw.text((total_box_x + 165, total_box_y + 48), format_currency(gst_value), font=resolve_font(18), fill=text_color)
+            draw.text((total_box_x + 18, total_box_y + 76), "Total", font=resolve_font(22, bold=True), fill=text_color)
+            draw.text((total_box_x + 165, total_box_y + 76), format_currency(total_value), font=resolve_font(22, bold=True), fill=text_color)
+        else:
+            total_value = subtotal
+            draw.text((total_box_x + 18, total_box_y + 28), "Total", font=resolve_font(22, bold=True), fill=text_color)
+            draw.text((total_box_x + 165, total_box_y + 28), format_currency(total_value), font=resolve_font(22, bold=True), fill=text_color)
+
+        with io.BytesIO() as buf:
+            image.save(buf, format="PNG")
+            return buf.getvalue()
 
 
 @st.cache_data
@@ -449,12 +499,25 @@ def generate_invoice_jpeg(invoice_no, invoice_date, customer, line_items, gst_en
 st.markdown(
     """
     <style>
-    .stApp {
+    html, body {{
+        font-size: 18px;
+    }}
+    .stApp {{
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    }
-    .block-container {
+        font-size: 18px;
+    }}
+    .block-container {{
         max-width: 1400px !important;
-    }
+    }}
+    .stSidebar, .stSidebar * {{
+        font-size: 1.04rem !important;
+    }}
+    .stTextInput input, .stSelectbox div, .stMultiSelect div, .stDateInput input, .stNumberInput input {{
+        font-size: 1rem !important;
+    }}
+    .stButton button, .stDownloadButton button {{
+        font-size: 1rem !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -472,7 +535,10 @@ with st.sidebar:
     owner_email = st.text_input("Owner Email", value="")
     owner_address = st.text_area("Owner Address", value="", height=100)
 
-    customer_name = st.selectbox("Customer Name", ["", *[customer["name"] for customer in customers]], index=0)
+    customer_name_input = st.text_input("Customer Name (custom or quick select)", value="")
+    customer_name_select = st.selectbox("Quick Select Customer Name", ["", *[customer["name"] for customer in customers]], index=0)
+    customer_name = customer_name_input.strip() or customer_name_select.strip()
+    st.caption("Only the customer name is used for invoice output; add phone/email/address manually if you want them on the bill.")
     customer_phone = st.text_input("Customer Phone", value="")
     customer_email = st.text_input("Customer Email", value="")
     customer_address = st.text_area("Customer Address", value="", height=100)

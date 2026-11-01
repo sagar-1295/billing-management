@@ -137,7 +137,7 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             border-bottom: 1px solid {theme['border_color']};
         }}
         .company-name {{
-            font-size: 22px;
+                    font-size: 18px;
             font-weight: 700;
             letter-spacing: 0.02em;
             color: {theme['accent']};
@@ -163,11 +163,11 @@ def build_invoice_html(customer, selected_line_items, invoice_no, invoice_date, 
             margin-bottom: 4px;
         }}
         .customer-name {{
-            font-size: 60px;
-            font-weight: 900;
-            line-height: 1.02;
+                    font-size: 34px;
+                    font-weight: 800;
+                    line-height: 1.08;
             color: {theme['text_color']};
-            letter-spacing: -0.06em;
+                    letter-spacing: -0.04em;
             margin: 0 0 6px;
         }}
         .detail-text {{
@@ -539,7 +539,7 @@ with st.sidebar:
     theme_name = st.selectbox("Theme", [theme["name"] for theme in themes], index=0)
     theme = get_theme_by_name(theme_name)
 
-    owner_name = st.text_input("Owner / Provider Name", value="")
+    owner_name = st.text_input("Owner / Provider Name", value="Sagar Agency")
     owner_phone = st.text_input("Owner Phone", value="")
     owner_email = st.text_input("Owner Email", value="")
     owner_address = st.text_area("Owner Address", value="", height=100)
@@ -600,7 +600,7 @@ if not selected_line_items:
     st.stop()
 
 owner_details = {
-    "name": owner_name.strip(),
+    "name": owner_name.strip() or "Sagar Agency",
     "phone": owner_phone.strip(),
     "email": owner_email.strip(),
     "address": owner_address.strip(),
